@@ -13,16 +13,16 @@
         4. 获取文件所在目录
 */
 
-namespace LogModel
+namespace LogModule
 {
     namespace util
     {
         class Date
         {
         public:
-            static size_t GetTime()
+            static time_t GetCurTime()
             {
-                return (size_t)time(nullptr);
+                return time(nullptr);
             }
         };
 
