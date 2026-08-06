@@ -72,7 +72,7 @@ namespace LogModule
                         index = pos + 1;
                         continue;
                     }
-                    if(IsExists(pathname))
+                    if(IsExists(subdir))
                     {
                         index = pos + 1;
                         continue;

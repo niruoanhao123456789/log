@@ -4,6 +4,9 @@
 #include<cassert>
 #include<sstream>
 #include<string>
+#include<memory>
+#include<iostream>
+#include<cstdlib>
 #include"Level.hpp"
 #include"LogMessage.hpp"
 
@@ -12,13 +15,13 @@ namespace LogModule
     class FormatItem
     {
     public:
+        virtual ~FormatItem() {}
         virtual void format(std::ostream& os,const LogMessage& msg) = 0;
     };
 
     class MessageFormatItem : public FormatItem
     {
     public:
-        MessageFormatItem(const std::string& str = "") {}
         virtual void format(std::ostream& os,const LogMessage& msg) override
         {
             os << msg._payload;
@@ -28,7 +31,6 @@ namespace LogModule
     class LevelFormatItem : public FormatItem
     {
     public:
-        LevelFormatItem(const std::string& str = "") {}
         virtual void format(std::ostream& os,const LogMessage& msg) override
         {
             os << LogLevel::LevelToString(msg._level);
@@ -38,7 +40,6 @@ namespace LogModule
     class NameFormatItem : public FormatItem
     {
     public:
-        NameFormatItem(const std::string& str = "") {}
         virtual void format(std::ostream& os,const LogMessage& msg) override
         {
             os << msg._name;
@@ -48,7 +49,6 @@ namespace LogModule
     class ThreadFormatItem : public FormatItem
     {
     public:
-        ThreadFormatItem(const std::string& str = "") {}
         virtual void format(std::ostream& os,const LogMessage& msg) override
         {
             os << msg._tid;
@@ -81,7 +81,6 @@ namespace LogModule
     class CFileFormatItem : public FormatItem
     {
     public:
-        CFileFormatItem(const std::string& str = "") {}
         virtual void format(std::ostream& os,const LogMessage& msg) override
         {
             os << msg._file;
@@ -91,7 +90,6 @@ namespace LogModule
     class CLineFormatItem : public FormatItem 
     {
     public:
-        CLineFormatItem(const std::string &str = ""){}
         virtual void format(std::ostream &os, const LogMessage &msg) override
         {
             os << msg._line;
@@ -101,8 +99,9 @@ namespace LogModule
     class TabFormatItem : public FormatItem
     {
     public:
-        TabFormatItem(const std::string& str = "") {}
-        virtual void format(std::ostream& os,const LogMessage& msg) override
+        TabFormatItem() {}
+        /***/
+        virtual void format(std::ostream& os,const LogMessage&) override
         {
             os << "\t";
         }
@@ -111,8 +110,8 @@ namespace LogModule
     class NLineFormatItem : public FormatItem
     {
     public:
-        NLineFormatItem(const std::string& str = "") {}
-        virtual void format(std::ostream& os,const LogMessage& msg) override
+        /***/
+        virtual void format(std::ostream& os,const LogMessage&) override
         {
             os << "\n";
         }
@@ -122,7 +121,8 @@ namespace LogModule
     {
     public:
         OtherFormatItem(const std::string& str = "") :_str(str) {}
-        virtual void format(std::ostream& os,const LogMessage& msg) override
+        /***/
+        virtual void format(std::ostream& os,const LogMessage&) override
         {
             os << _str;
         }
@@ -146,7 +146,7 @@ namespace LogModule
             %m 日志消息
             %n 换行
         */
-        //时间[年-月-日 时:分:秒] 线程ID [日志名称] [文件名:行号] [日志级别] 消息换行
+        //时间[年-月-日 时:分:秒] 线程ID [日志名称] [文件名:行号] [日志级别]- 消息换行
         Formatter(const std::string& pattern = "[%d{%Y-%m-%d %H:%M:%S}][%t][%c][%f:%l][%p]- %m%n")
         :_pattern(pattern)
         {
@@ -253,16 +253,18 @@ namespace LogModule
         // 根据不同格式化字符串，创建不同的格式化子项对象
         std::shared_ptr<FormatItem> CreateItem(const std::string& key,const std::string& value)
         {
-            if (key == "m") return std::make_shared<MessageFormatItem>(value);
-            if (key == "p") return std::make_shared<LevelFormatItem>(value);
-            if (key == "c") return std::make_shared<NameFormatItem>(value);
-            if (key == "t") return std::make_shared<ThreadFormatItem>(value);
-            if (key == "n") return std::make_shared<NLineFormatItem>(value);
+            if (key == "m") return std::make_shared<MessageFormatItem>();
+            if (key == "p") return std::make_shared<LevelFormatItem>();
+            if (key == "c") return std::make_shared<NameFormatItem>();
+            if (key == "t") return std::make_shared<ThreadFormatItem>();
+            if (key == "n") return std::make_shared<NLineFormatItem>();
             if (key == "d") return std::make_shared<TimeFormatItem>(value);
-            if (key == "f") return std::make_shared<CFileFormatItem>(value);
-            if (key == "l") return std::make_shared<CLineFormatItem>(value);
-            if (key == "T") return std::make_shared<TabFormatItem>(value);
-            return std::make_shared<OtherFormatItem>(value);
+            if (key == "f") return std::make_shared<CFileFormatItem>();
+            if (key == "l") return std::make_shared<CLineFormatItem>();
+            if (key == "T") return std::make_shared<TabFormatItem>();
+            if (key == "")  return std::make_shared<OtherFormatItem>(value);
+            std::cout<<"未定义格式化字符: %"<<key<<std::endl;
+            abort();
         }
 
     private:
