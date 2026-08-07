@@ -100,7 +100,6 @@ namespace LogModule
     {
     public:
         TabFormatItem() {}
-        /***/
         virtual void format(std::ostream& os,const LogMessage&) override
         {
             os << "\t";
@@ -110,7 +109,6 @@ namespace LogModule
     class NLineFormatItem : public FormatItem
     {
     public:
-        /***/
         virtual void format(std::ostream& os,const LogMessage&) override
         {
             os << "\n";
@@ -121,7 +119,6 @@ namespace LogModule
     {
     public:
         OtherFormatItem(const std::string& str = "") :_str(str) {}
-        /***/
         virtual void format(std::ostream& os,const LogMessage&) override
         {
             os << _str;

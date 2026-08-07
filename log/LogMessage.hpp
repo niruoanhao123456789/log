@@ -19,7 +19,6 @@ namespace LogModule
         std::string _payload;       //日志消息
         LogLevel::Level _level;     //日志等级
         
-        /***/
         LogMessage(const std::string& name, const std::string file, size_t line, std::string&& payload, LogLevel::Level level)
         : _line(line)
         , _ctime(util::Date::GetCurTime())
@@ -31,7 +30,6 @@ namespace LogModule
         {
 
         }
-        /***/
     };
 }
 

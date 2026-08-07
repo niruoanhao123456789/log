@@ -57,7 +57,7 @@ namespace LogModule
         std::ofstream _ofs;
     };
 
-    // 滚动文件的方式输出 可文件大小、时间等方式滚动
+    // 滚动文件的方式输出由文件大小方式滚动
     class RollBySizeSink : public LogSink
     {
     public:
@@ -119,6 +119,88 @@ namespace LogModule
         std::ofstream _ofs;
         size_t _maxsize;
         size_t _cursize;
+        size_t _recount;
+    };
+
+    // 滚动文件的方式输出由时间段方式滚动
+    enum TimeGap
+    {
+        GAP_SECOND,
+        GAP_MINITUE,
+        GAP_HOUR,
+        GAP_DAY
+    };
+
+    class RollByTimeSink : public LogSink
+    {
+    public:
+        // 构造时传入文件并打开
+        RollByTimeSink(const std::string& basename,TimeGap gaptype)
+        :_basename(basename)
+        ,_recount(0)
+        {
+            switch(gaptype)
+            {
+            case TimeGap::GAP_SECOND: _gapsize = 1; break;
+            case TimeGap::GAP_MINITUE: _gapsize = 60; break;
+            case TimeGap::GAP_HOUR: _gapsize = 3600; break;
+            case TimeGap::GAP_DAY: _gapsize = 3600*24; break;
+            default: std::cout<<"时间段TimeGap类型错误"<<std::endl; abort();
+            }
+            // 获取当前时间处在第几个时间段
+            time_t curtime = util::Date::GetCurTime();
+            _curgap = _gapsize == 1 ? curtime : curtime % _gapsize;
+            std::string pathname = CreateNewFile();
+            // 创建指定文件目录
+            util::File::CreateDirectory(util::File::GetPath(pathname));
+            // 在该目录下创建并打开日志文件
+            _ofs.open(pathname,std::ios::binary | std::ios::app);
+            assert(_ofs.is_open());
+        }
+
+        void Log(const char* data = nullptr,size_t len = 0) override
+        {
+            time_t curtime = util::Date::GetCurTime();
+            size_t curgap = _gapsize == 1 ? curtime : curtime % _gapsize;
+            if((curgap) != _curgap)
+            {
+                _ofs.close();
+                std::string pathname = CreateNewFile();
+                // 创建指定文件目录
+                util::File::CreateDirectory(util::File::GetPath(pathname));
+                // 在该目录下创建并打开日志文件
+                _ofs.open(pathname,std::ios::binary | std::ios::app);
+                assert(_ofs.is_open());
+                _curgap = curgap;
+            }
+            _ofs.write(data,len);
+            assert(_ofs.good());
+        }
+
+    private:
+        // 进行文件大小检查，超过指定大小则创建新文件
+        std::string CreateNewFile()
+        {
+            time_t time = util::Date::GetCurTime();
+            struct tm t;
+            localtime_r(&time,&t);
+            std::string filename = _basename
+            + std::to_string(t.tm_year + 1900)
+            + std::to_string(t.tm_mon + 1)
+            + std::to_string(t.tm_mday)
+            + std::to_string(t.tm_hour)
+            + std::to_string(t.tm_min)
+            + std::to_string(t.tm_sec)
+            + "[" + std::to_string(++_recount) + "]"
+            + ".log";
+            return filename;
+        }
+
+    private:
+        std::string _basename;
+        std::ofstream _ofs;
+        size_t _curgap;
+        size_t _gapsize;
         size_t _recount;
     };
 
