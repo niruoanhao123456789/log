@@ -79,7 +79,7 @@ namespace LogModule
 
         void warnning(const std::string& file ,size_t line, const std::string& format, ...)
         {
-            if(LogLevel::Level::WARNNING < _limitlevel) { return; }
+            if(LogLevel::Level::WARNING < _limitlevel) { return; }
 
             char* res = nullptr;
             va_list al;
@@ -91,7 +91,7 @@ namespace LogModule
             }
             va_end(al);
             
-            Serialize(file,line,LogLevel::Level::WARNNING,res);
+            Serialize(file,line,LogLevel::Level::WARNING,res);
             
             free(res);
             res=nullptr;

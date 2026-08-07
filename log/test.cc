@@ -17,7 +17,7 @@ int main()
     std::shared_ptr<LogSink> stdoutlsp = SinkFactory::Create<StdOutSink>();
     std::shared_ptr<LogSink> filelsp = SinkFactory::Create<FileSink>("./logfile/test.log");
     std::shared_ptr<LogSink> rlsp = SinkFactory::Create<RollBySizeSink>("./logfile/test.log",1024*1024);
-    // std::shared_ptr<LogSink> tlsp = SinkFactory::Create<RollByTimeSink>("./logfile/test.log",TimeGap::GAP_SECOND);
+    std::shared_ptr<LogSink> tlsp = SinkFactory::Create<RollByTimeSink>("./logfile/test.log",TimeGap::GAP_SECOND);
 
     // stdoutlsp->Log(s.c_str(),s.size());
     // filelsp->Log(s.c_str(),s.size());
@@ -35,7 +35,7 @@ int main()
     // }
 
     auto ft = std::make_shared<Formatter>();
-    std::vector<std::shared_ptr<LogSink>> sinks = {stdoutlsp,filelsp,rlsp};
+    std::vector<std::shared_ptr<LogSink>> sinks = {stdoutlsp,filelsp,tlsp};
     Logger::ptr logger(new SyncLogger("Syn_Logger",ft,LogLevel::Level::WARNING,sinks));
     
     logger->debug(__FILE__,__LINE__,"%s","testing...");

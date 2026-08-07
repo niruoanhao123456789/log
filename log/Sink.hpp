@@ -137,7 +137,6 @@ namespace LogModule
         // 构造时传入文件并打开
         RollByTimeSink(const std::string& basename,TimeGap gaptype)
         :_basename(basename)
-        ,_recount(0)
         {
             switch(gaptype)
             {
@@ -191,7 +190,6 @@ namespace LogModule
             + std::to_string(t.tm_hour)
             + std::to_string(t.tm_min)
             + std::to_string(t.tm_sec)
-            + "[" + std::to_string(++_recount) + "]"
             + ".log";
             return filename;
         }
@@ -201,7 +199,6 @@ namespace LogModule
         std::ofstream _ofs;
         size_t _curgap;
         size_t _gapsize;
-        size_t _recount;
     };
 
     
