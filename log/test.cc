@@ -4,11 +4,12 @@
 #include"Formatter.hpp"
 #include"Sink.hpp"
 #include"Logger.hpp"
+#include"Buffer.hpp"
 #include<string>
 
 using namespace LogModule;
 
-int main()
+void test1()
 {
     // LogMessage msg("root","test.cc",10,"testing...",LogLevel::Level::DEBUG);
     // Formatter ft;
@@ -34,10 +35,18 @@ int main()
     //     tlsp->Log(s.c_str(),s.size());
     // }
 
-    auto ft = std::make_shared<Formatter>();
-    std::vector<std::shared_ptr<LogSink>> sinks = {stdoutlsp,filelsp,tlsp};
-    Logger::ptr logger(new SyncLogger("Syn_Logger",ft,LogLevel::Level::WARNING,sinks));
-    
+    // auto ft = std::make_shared<Formatter>();
+    // std::vector<std::shared_ptr<LogSink>> sinks = {stdoutlsp,filelsp,tlsp};
+    // Logger::ptr logger(new SyncLogger("Syn_Logger",ft,LogLevel::Level::WARNING,sinks));
+
+    std::unique_ptr<LoggerBuilder> builder = std::make_unique<LocalLoggerBuilder>();
+    builder->BuildLoggerName("Syn_Logger");
+    builder->BUildLoggerLevel(LogLevel::Level::WARNING);
+    builder->BUildLoggerSink<StdOutSink>();
+    builder->BUildLoggerSink<FileSink>("./logfile/test.log");
+
+    Logger::ptr logger = builder->Build();
+
     logger->debug(__FILE__,__LINE__,"%s","testing...");
     logger->error(__FILE__,__LINE__,"%s","testing...");
     logger->fatal(__FILE__,__LINE__,"%s","testing...");
@@ -50,6 +59,16 @@ int main()
     //     logger->fatal(__FILE__,__LINE__,"%s","testing...");
     //     i+=s.size();
     // }
+}
+
+void test2()
+{
+
+}
+
+int main()
+{
+    test2();
 
     return 0;
 }

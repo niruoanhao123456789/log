@@ -6,6 +6,7 @@
 #include<fstream> 
 #include<cassert>
 #include<ctime>
+#include<cassert>
 #include"Util.hpp"
 #include"LogMessage.hpp"
 #include"Formatter.hpp"
@@ -26,6 +27,7 @@ namespace LogModule
         // 将日志消息写入标准输出
         void Log(const char* data = nullptr,size_t len = 0) override
         {
+            assert(data);
             std::cout.write(data,len);
         }
     };
@@ -34,7 +36,7 @@ namespace LogModule
     class FileSink : public LogSink
     {
     public:
-        /***/
+        
         FileSink(const std::string& pathname)
         :_pathname(pathname)
         {
@@ -79,6 +81,7 @@ namespace LogModule
 
         void Log(const char* data = nullptr,size_t len = 0) override
         {
+            assert(data);
             if(_cursize >= _maxsize)
             {
                 _ofs.close();
@@ -159,6 +162,7 @@ namespace LogModule
 
         void Log(const char* data = nullptr,size_t len = 0) override
         {
+            assert(data);
             time_t curtime = util::Date::GetCurTime();
             size_t curgap = _gapsize == 1 ? curtime : curtime % _gapsize;
             if((curgap) != _curgap)
@@ -211,5 +215,4 @@ namespace LogModule
             return std::make_shared<SinkType>(std::forward<Args>(args)...);
         }
     };
-
 }

@@ -176,12 +176,81 @@ namespace LogModule
         // 同步日志器，是将日志直接通过落地模块句柄进行日志落地
         virtual void log(const char* data, size_t len) override
         {
+            assert(data);
             std::unique_lock<std::mutex> lock(_lock);
             if(_sinks.empty()) return;
             for(auto& sink:_sinks)
             {
                 sink->Log(data,len);
             }
+        }
+    };
+
+    // 使用建造者模式来建造日志器，不用用户直接构建建日志器
+    // 建造者基类
+    // 1、设置日志器类型
+    // 2、将不同类型日志器构建，放在一个建造者里
+    enum class LoggerType
+    {
+        LOGGER_SYNC,
+        LOGGER_ASYNC
+    };
+
+    class LoggerBuilder
+    {
+    public:
+        LoggerBuilder()
+        :_logger_type(LoggerType::LOGGER_SYNC)
+        ,_limit_level(LogLevel::Level::DEBUG)
+        {}
+
+        void BuildLoggerType(LoggerType type) { _logger_type = type; }
+        void BuildLoggerName(const std::string& name) { _logger_name = name; }
+        void BUildLoggerLevel(LogLevel::Level level) { _limit_level = level; }
+
+        void BuildLoggerFormatter(const std::string& pattern)
+        {
+            _formatter = std::make_shared<Formatter>(pattern);
+        }
+
+        template<typename SinkType,typename ...Args>
+        void BUildLoggerSink(Args&& ...args)
+        {
+            std::shared_ptr<SinkType> sp = std::make_shared<SinkType>(std::forward<Args>(args)...);
+            _sinks.emplace_back(sp);
+        }
+
+        virtual Logger::ptr Build() = 0;
+
+    protected:
+        LoggerType _logger_type;
+        std::string _logger_name;
+        std::shared_ptr<Formatter> _formatter;
+        LogLevel::Level _limit_level;
+        std::vector<std::shared_ptr<LogSink>> _sinks;
+    };
+
+    // 派生出局部建造者类与全局建造者类
+    class LocalLoggerBuilder : public LoggerBuilder
+    {
+    public:
+        Logger::ptr Build() override
+        {
+            assert(!_logger_name.empty());
+            if(_formatter.get() == nullptr)
+            {
+                _formatter = std::make_shared<Formatter>();
+            }
+            if(_sinks.empty())
+            {
+                _sinks.emplace_back(SinkFactory::Create<StdOutSink>());
+            }
+            if(_logger_type != LoggerType::LOGGER_SYNC)
+            {
+
+            }
+
+            return std::make_shared<SyncLogger>(_logger_name,_formatter,_limit_level,_sinks);
         }
     };
 }
