@@ -36,7 +36,7 @@ namespace LogModule
         }
 
         // 返回可读数据的起始地址
-        const char *Begin()
+        const char *Begin() const
         {
             return &_buffer[_rindex];
         }

@@ -15,10 +15,10 @@ void test1()
     // Formatter ft;
     // std::string s = ft.format(msg);
     
-    std::shared_ptr<LogSink> stdoutlsp = SinkFactory::Create<StdOutSink>();
-    std::shared_ptr<LogSink> filelsp = SinkFactory::Create<FileSink>("./logfile/test.log");
-    std::shared_ptr<LogSink> rlsp = SinkFactory::Create<RollBySizeSink>("./logfile/test.log",1024*1024);
-    std::shared_ptr<LogSink> tlsp = SinkFactory::Create<RollByTimeSink>("./logfile/test.log",TimeGap::GAP_SECOND);
+    // std::shared_ptr<LogSink> stdoutlsp = SinkFactory::Create<StdOutSink>();
+    // std::shared_ptr<LogSink> filelsp = SinkFactory::Create<FileSink>("./logfile/test.log");
+    // std::shared_ptr<LogSink> rlsp = SinkFactory::Create<RollBySizeSink>("./logfile/test.log",1024*1024);
+    // std::shared_ptr<LogSink> tlsp = SinkFactory::Create<RollByTimeSink>("./logfile/test.log",TimeGap::GAP_SECOND);
 
     // stdoutlsp->Log(s.c_str(),s.size());
     // filelsp->Log(s.c_str(),s.size());
@@ -40,10 +40,12 @@ void test1()
     // Logger::ptr logger(new SyncLogger("Syn_Logger",ft,LogLevel::Level::WARNING,sinks));
 
     std::unique_ptr<LoggerBuilder> builder = std::make_unique<LocalLoggerBuilder>();
-    builder->BuildLoggerName("Syn_Logger");
+    builder->BuildLoggerName("Async_Logger");
     builder->BUildLoggerLevel(LogLevel::Level::WARNING);
-    builder->BUildLoggerSink<StdOutSink>();
+    // builder->BUildLoggerSink<StdOutSink>();
     builder->BUildLoggerSink<FileSink>("./logfile/test.log");
+    builder->BUildLoggerSink<RollBySizeSink>("./logfile/test.log",1024*1024);
+    builder->BuildLoggerType(LoggerType::LOGGER_ASYNC);
 
     Logger::ptr logger = builder->Build();
 
@@ -52,13 +54,13 @@ void test1()
     logger->fatal(__FILE__,__LINE__,"%s","testing...");
     logger->infor(__FILE__,__LINE__,"%s","testing...");
     logger->warnning(__FILE__,__LINE__,"%s","testing...");
-    // size_t i = 0;
-    // while(i<1024*1024)
-    // {
-    //     std::string s = "testing...";
-    //     logger->fatal(__FILE__,__LINE__,"%s","testing...");
-    //     i+=s.size();
-    // }
+    size_t i = 0;
+    while(i<1024*1024)
+    {
+        std::string s = "testing...";
+        logger->fatal(__FILE__,__LINE__,"%s","testing...");
+        i+=s.size();
+    }
 }
 
 void test2()
@@ -68,7 +70,7 @@ void test2()
 
 int main()
 {
-    test2();
+    test1();
 
     return 0;
 }
