@@ -18,6 +18,7 @@ void sync_bench_thread_log(size_t thread_count, size_t msg_count, size_t msglen)
     bench(logger_name, thread_count, msglen, msg_count);
     LOGI("************************************************");
 }
+
 void async_bench_thread_log(size_t thread_count, size_t msg_count, size_t msglen)
 {
     static int num = 1;
@@ -34,6 +35,7 @@ void async_bench_thread_log(size_t thread_count, size_t msg_count, size_t msglen
     bench(logger_name, thread_count, msglen, msg_count);
     LOGI("************************************************");
 }
+
 void bench_test() {
     /*异步日志输出*/
     async_bench_thread_log(1, 1000000, 100);
