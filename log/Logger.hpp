@@ -10,6 +10,7 @@
 #include<vector>
 #include<cstdarg>
 #include<unordered_map>
+#include<cassert>
 
 /*
     日志器模块
@@ -293,7 +294,7 @@ namespace LogModule
         }
     };
 
-/*
+    /*
     日志管理器
     1、对创建的所有日志器进行管理，并将管理器设置为单例
     2、可在程序任意位置获得相同单例对象，获取其中的日志器进行日志输出
@@ -319,10 +320,11 @@ namespace LogModule
             return true;
         }
 
-        void AddLogger(const std::string& loggername,Logger::ptr logger)
+        void AddLogger(Logger::ptr logger)
         {
+            if(IsExistsLogger(logger->loggerName())) return;
             std::unique_lock<std::mutex> lock(_lock);
-            _loggers[loggername] = logger;
+            _loggers[logger->loggerName()] = logger;
         }
 
         Logger::ptr GetLogger(const std::string& loggername)
@@ -345,7 +347,7 @@ namespace LogModule
     private:
         LoggerManager()
         {
-            std::unique_ptr<LocalLoggerBuilder> slb = std::make_unique<LocalLoggerBuilder>();
+            std::unique_ptr<LoggerBuilder> slb = std::make_unique<LocalLoggerBuilder>();
             slb->BuildLoggerName("root");
             slb->BuildLoggerType(LoggerType::LOGGER_SYNC);
             _root_logger = slb->Build();
@@ -358,5 +360,35 @@ namespace LogModule
         std::mutex _lock;
         Logger::ptr _root_logger;
         std::unordered_map<std::string,Logger::ptr> _loggers;
+    };
+
+    class GobalLoggerBuilder : public LoggerBuilder
+    {
+        Logger::ptr Build() override
+        {
+            assert(!_logger_name.empty());
+            assert(!LoggerManager::getInstance().IsExistsLogger(_logger_name));
+            if(_formatter.get() == nullptr)
+            {
+                _formatter = std::make_shared<Formatter>();
+            }
+            if(_sinks.empty())
+            {
+                _sinks.emplace_back(SinkFactory::Create<StdOutSink>());
+            }
+
+            Logger::ptr logger;
+            if(_logger_type == LoggerType::LOGGER_ASYNC)
+            {
+                logger = std::make_shared<AsyncLogger>(_logger_name,_formatter,_limit_level,_sinks,_looper_status);
+            }
+            else
+            {
+                logger = std::make_shared<SyncLogger>(_logger_name,_formatter,_limit_level,_sinks);
+            }
+            LoggerManager::getInstance().AddLogger(logger);
+
+            return logger;
+        }
     };
 }
