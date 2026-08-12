@@ -32,7 +32,7 @@
 
 #### 使用说明
 
-使用时用#include"" 包含log文件夹下的log.hpp文件即可。
+使用时用#include"" 包含log文件夹下的Log.hpp文件即可。
 
 
 #### 参与贡献
