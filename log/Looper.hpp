@@ -37,6 +37,7 @@ namespace LogModule
         {
             _isrunning = false;
             _cond_con.notify_all();
+            _thread.join();
         }
 
         void Push(const char* data, size_t len)
